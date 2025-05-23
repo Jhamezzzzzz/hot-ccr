@@ -9,27 +9,32 @@ const TextToSpeech = () => {
   const [rate, setRate] = useState(1); // default: normal speed
 
 
-  useEffect(() => {
-    if ('speechSynthesis' in window) {
-      const synth = window.speechSynthesis;
+ useEffect(() => {
+  if ('speechSynthesis' in window) {
+    const synth = window.speechSynthesis;
 
-      const loadVoices = () => {
-        const availableVoices = synth.getVoices();
-        setVoices(availableVoices);
+    const loadVoices = () => {
+      const availableVoices = synth.getVoices();
 
-      // Biarkan user memilih sendiri, tidak otomatis pilih suara pertama
-        if (!selectedVoice && availableVoices.length > 0) {
-        setSelectedVoice(null);
-        }
-      };
+      // Filter hanya Bahasa Indonesia (id-ID)
+      const indoVoices = availableVoices.filter(v => v.lang.startsWith('id'));
 
-      if (synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = loadVoices;
+      setVoices(indoVoices.length > 0 ? indoVoices : availableVoices);
+
+      // Auto-pilih suara Bahasa Indonesia kalau ada dan belum dipilih
+      if (!selectedVoice && indoVoices.length > 0) {
+        setSelectedVoice(indoVoices[0]);
       }
+    };
 
-      loadVoices();
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices;
     }
-  }, [selectedVoice]);
+
+    loadVoices();
+  }
+}, [selectedVoice]);
+
 
 const speak = () => {
   if (!selectedVoice) {
@@ -48,11 +53,10 @@ const speak = () => {
   }
 };
 
+const filteredVoices = voices.filter((voice) =>
+  voice.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
 
-
-  const filteredVoices = voices.filter((voice) =>
-    voice.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const pause = () => {
   if ('speechSynthesis' in window && speechSynthesis.speaking) {
