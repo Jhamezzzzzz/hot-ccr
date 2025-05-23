@@ -9,19 +9,21 @@ const TextToSpeech = () => {
   const [rate, setRate] = useState(1); // default: normal speed
 
 
- useEffect(() => {
+useEffect(() => {
+  const savedText = localStorage.getItem('savedTTS');
+  if (savedText) {
+    setText(savedText);
+  }
+
   if ('speechSynthesis' in window) {
     const synth = window.speechSynthesis;
 
     const loadVoices = () => {
       const availableVoices = synth.getVoices();
-
-      // Filter hanya Bahasa Indonesia (id-ID)
       const indoVoices = availableVoices.filter(v => v.lang.startsWith('id'));
 
       setVoices(indoVoices.length > 0 ? indoVoices : availableVoices);
 
-      // Auto-pilih suara Bahasa Indonesia kalau ada dan belum dipilih
       if (!selectedVoice && indoVoices.length > 0) {
         setSelectedVoice(indoVoices[0]);
       }
@@ -34,6 +36,7 @@ const TextToSpeech = () => {
     loadVoices();
   }
 }, [selectedVoice]);
+
 
 
 const speak = () => {
@@ -69,6 +72,11 @@ const cancel = () => {
     speechSynthesis.cancel();
   }
 };
+const saveText = () => {
+  localStorage.setItem('savedTTS', text);
+  alert('Teks berhasil disimpan!');
+};
+
 
 
 
@@ -138,6 +146,9 @@ const cancel = () => {
         </button>
         <button className="tts-button icon-button cancel" onClick={cancel} title="Batal">
             ❌
+        </button>
+        <button className="tts-button save" onClick={saveText}>
+            💾 Simpan Teks
         </button>
         </div>
       </div>
